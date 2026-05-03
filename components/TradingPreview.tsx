@@ -4,6 +4,36 @@ import { motion } from "framer-motion";
 import { Activity, ArrowDownRight, ArrowUpRight, Search } from "lucide-react";
 import { Badge } from "./ui/Badge";
 
+// Deterministic seeded pseudo-random so SSR and CSR match
+function mulberry32(seed: number) {
+  return function () {
+    let t = (seed += 0x6d2b79f5);
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+const CANDLES = (() => {
+  const rng = mulberry32(42);
+  return Array.from({ length: 30 }).map((_, i) => {
+    const x = 20 + i * 19;
+    const open = 100 + Math.sin(i * 0.6) * 50 + rng() * 10;
+    const close = open + (rng() - 0.4) * 30;
+    const high = Math.max(open, close) + rng() * 10;
+    const low = Math.min(open, close) - rng() * 10;
+    const up = close > open;
+    return {
+      x,
+      low: +low.toFixed(2),
+      high: +high.toFixed(2),
+      bodyY: +Math.min(open, close).toFixed(2),
+      bodyH: +Math.max(2, Math.abs(close - open)).toFixed(2),
+      color: up ? "#00FFB2" : "#FF6B7A",
+    };
+  });
+})();
+
 const orderbook = {
   asks: [
     { p: 112532.4, s: 0.412, total: 46362.36 },
@@ -189,34 +219,25 @@ function Chart() {
         />
       ))}
 
-      {Array.from({ length: 30 }).map((_, i) => {
-        const x = 20 + i * 19;
-        const open = 100 + Math.sin(i * 0.6) * 50 + Math.random() * 10;
-        const close = open + (Math.random() - 0.4) * 30;
-        const high = Math.max(open, close) + Math.random() * 10;
-        const low = Math.min(open, close) - Math.random() * 10;
-        const up = close > open;
-        const color = up ? "#00FFB2" : "#FF6B7A";
-        return (
-          <g key={i} opacity="0.45">
-            <line
-              x1={x}
-              x2={x}
-              y1={low}
-              y2={high}
-              stroke={color}
-              strokeWidth="1"
-            />
-            <rect
-              x={x - 4}
-              y={Math.min(open, close)}
-              width="8"
-              height={Math.max(2, Math.abs(close - open))}
-              fill={color}
-            />
-          </g>
-        );
-      })}
+      {CANDLES.map((c, i) => (
+        <g key={i} opacity="0.45">
+          <line
+            x1={c.x}
+            x2={c.x}
+            y1={c.low}
+            y2={c.high}
+            stroke={c.color}
+            strokeWidth="1"
+          />
+          <rect
+            x={c.x - 4}
+            y={c.bodyY}
+            width="8"
+            height={c.bodyH}
+            fill={c.color}
+          />
+        </g>
+      ))}
 
       <path
         d="M0,200 C50,180 100,120 160,140 C220,160 260,80 320,90 C380,100 420,40 480,55 C540,70 580,30 600,40 L600,280 L0,280 Z"

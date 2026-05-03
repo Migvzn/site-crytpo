@@ -5,6 +5,7 @@ import { Suspense, lazy } from "react";
 import { ArrowRight, Sparkles, ShieldCheck, Zap } from "lucide-react";
 import { Button } from "./ui/Button";
 import { Badge } from "./ui/Badge";
+import { ErrorBoundary } from "./ui/ErrorBoundary";
 
 const Spline = lazy(() => import("@splinetool/react-spline"));
 
@@ -111,27 +112,62 @@ function Trust({ icon, label }: { icon: React.ReactNode; label: string }) {
   );
 }
 
+function SplineFallback() {
+  return (
+    <div className="relative flex h-full w-full items-center justify-center">
+      {/* Concentric rings */}
+      <div className="absolute h-[88%] w-[88%] rounded-full border border-white/5" />
+      <div className="absolute h-[70%] w-[70%] rounded-full border border-accent-500/20" />
+      <div className="absolute h-[52%] w-[52%] rounded-full border border-emerald-glow/15" />
+      <div className="absolute h-[34%] w-[34%] rounded-full border border-white/10 animate-spin-slow" />
+
+      {/* Glow orb sphere */}
+      <div className="relative h-44 w-44 animate-float">
+        <div className="absolute inset-0 rounded-full bg-gradient-to-br from-accent-400 via-accent-600 to-accent-800 blur-[2px]" />
+        <div className="absolute inset-1 rounded-full bg-gradient-to-tr from-white/40 via-transparent to-transparent" />
+        <div className="absolute inset-0 rounded-full shadow-[inset_0_0_60px_rgba(0,0,0,0.5),0_0_120px_-10px_rgba(124,92,255,0.7)]" />
+        <div className="absolute -top-3 -left-3 h-8 w-8 rounded-full bg-white/30 blur-md" />
+      </div>
+
+      {/* Floating coin chips */}
+      <div className="absolute top-10 right-12 h-12 w-12 animate-float rounded-full bg-gradient-to-br from-[#F7931A] to-[#FFB347] shadow-glow flex items-center justify-center text-xl font-bold text-[#1a1100]">
+        ₿
+      </div>
+      <div className="absolute bottom-16 left-12 h-10 w-10 animate-float rounded-full bg-gradient-to-br from-[#627EEA] to-[#3C5AC8] shadow-glow flex items-center justify-center text-sm font-bold text-white" style={{ animationDelay: '1s' }}>
+        Ξ
+      </div>
+      <div className="absolute bottom-24 right-8 h-9 w-9 animate-float rounded-full bg-gradient-to-br from-[#9945FF] to-[#14F195] shadow-glow flex items-center justify-center text-xs font-bold text-white" style={{ animationDelay: '2s' }}>
+        S
+      </div>
+
+      {/* Particle dots */}
+      {[...Array(20)].map((_, i) => (
+        <div
+          key={i}
+          className="absolute h-1 w-1 rounded-full bg-white/40 animate-pulse-glow"
+          style={{
+            top: `${(i * 37) % 100}%`,
+            left: `${(i * 53) % 100}%`,
+            animationDelay: `${i * 0.15}s`,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
 function SplineStage() {
   return (
     <div className="relative aspect-square w-full overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-surface-2 via-surface to-background shadow-card">
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-accent-500/10 via-transparent to-emerald-glow/10" />
-      <Suspense
-        fallback={
-          <div className="flex h-full w-full items-center justify-center">
-            <div className="relative h-32 w-32 animate-spin-slow">
-              <div className="absolute inset-0 rounded-full border border-accent-500/40" />
-              <div className="absolute inset-2 rounded-full border border-emerald-glow/30" />
-              <div className="absolute inset-4 rounded-full border border-white/10" />
-              <div className="absolute inset-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent-400 shadow-glow" />
-            </div>
-          </div>
-        }
-      >
-        <Spline
-          scene="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode"
-          className="!h-full !w-full"
-        />
-      </Suspense>
+      <ErrorBoundary fallback={<SplineFallback />}>
+        <Suspense fallback={<SplineFallback />}>
+          <Spline
+            scene="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode"
+            className="!h-full !w-full"
+          />
+        </Suspense>
+      </ErrorBoundary>
       <div className="pointer-events-none absolute inset-0 rounded-[2rem] ring-1 ring-inset ring-white/10" />
     </div>
   );
