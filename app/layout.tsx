@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { MiamiBackground } from "@/components/MiamiBackground";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -53,6 +54,7 @@ export default function RootLayout({
       className={`${inter.variable} ${space.variable} ${mono.variable} dark`}
     >
       <body className="font-sans bg-background text-foreground antialiased">
+        <MiamiBackground />
         {children}
       </body>
     </html>
